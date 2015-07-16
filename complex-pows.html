@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>complex voronoi</title>
+	<script src="lib/d3/d3.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/1.7.0/math.min.js"></script>
+	<style type="text/css">
+	body {
+		margin: 0px;
+		overflow: hidden;
+	}
+	#wrap {
+		margin: auto;
+	}
+	#bg {
+		background-color: crimson;
+	}
+	</style>
+</head>
+<body>
+	<div id="wrap"><canvas id="bg">your browser doesn't support HTML5 canvas</canvas></div>
+	<script type="text/javascript">
+
+	var Complex = function(a, b) {
+		this.re = a;
+		this.im = b;
+		this.pow = function(n) {
+			if (n === 0) return 1;
+			if (n  <  0) return NaN;
+			var r = new Complex(this.re, this.im);
+			while(n > 1) {
+				tre = r.re*this.re - r.im*this.im;
+				tim = r.re*this.im + r.im*this.re;
+				r.re = tre;
+				r.im = tim;
+				--n;
+			}
+			return r;
+		}
+	}
+
+	function init() {
+
+		var width  = window.innerWidth;
+		var height = window.innerHeight;
+
+		var GRID_SIZE = 2;
+		var NUM_P     = 5;
+		var DEN_P     = 3;
+		var MARGIN    = Math.min(width, height)*.05;
+		var PT_RAD    = 20;
+
+		var canvas = d3.select('#bg')
+		.attr('width', width)
+		.attr('height', height);
+
+		var ctx = canvas.node().getContext('2d');
+
+		ctx.clearRect(0, 0, width, height);
+
+		var voronoi = d3.geom.voronoi();
+
+		voronoi.clipExtent([[0,0],[width, height]]);
+
+		for (var i = 0; i <= width; i+=width/GRID_SIZE) {
+			for (var j = 0; j <= height; j+=height/GRID_SIZE) {
+
+				var cn = new Complex(i, j);
+				var cnp = cn.pow()
+
+				ctx.beginPath();
+				ctx.arc(i, j, PT_RAD, 2*Math.PI, false);
+				ctx.fill();
+				ctx.closePath();
+			}
+		}
+	}
+
+	window.onload = init;
+
+	window.onresize = init;
+
+	</script>
+</body>
+</html>

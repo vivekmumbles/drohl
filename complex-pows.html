@@ -22,20 +22,43 @@
 	<div id="wrap"><canvas id="bg">your browser doesn't support HTML5 canvas</canvas></div>
 	<script type="text/javascript">
 
-	var NUM_P     = 12;
-	var DEN_P     = 4;
+	var NUM_P     = 3;
+	var DEN_P     = 1;
 	var GRID_SIZE = 10;
 
 	var SPREAD = .5;
 	var PT_RAD = 2;
 
 	var TOGGLE_COLOR = 2;
+	var TOGGLE_ANIM = true;
+
+	var IDX = 0;
+
+	var anim_id;
+
+	function getRatios() {
+		var r = d3.range(1,NUM_P+1).map(function(x) { return d3.range(1,DEN_P+1).map(function(y) { return [x,y]; }); });
+		r = r.reduce(function(a, b) { return a.concat(b); });
+		var d = {};
+		r = r.filter(function(x) { var r = x[0]/x[1]; if (r in d) { return false; } else { d[r] = true; return true; } });
+		r = r.map(function(x) { return x[0]/x[1]; });
+		return r.sort(function(a, b) { return a - b; });
+	}
+
+	var RATIOS = getRatios();
+
+	var n = 20;
+
+	var RATIOS_2 = d3.range(1, 20, .0005);
 
 	function init() {
 
+		anim_id = window.requestAnimationFrame(init);
+
+		IDX = (IDX+1) % RATIOS_2.length;
+
 		var width  = window.innerWidth;
 		var height = window.innerHeight;
-
 
 		var canvas = d3.select('#bg')
 		.attr('width', width)
@@ -55,7 +78,7 @@
 			for (var j = -GRID_SIZE/2; j <= GRID_SIZE/2; ++j) {
 
 				var cn = new math.complex(i, j);
-				var cnp = math.pow(cn, NUM_P/DEN_P);
+				var cnp = math.pow(cn, RATIOS_2[IDX]);
 				var a = cnp.re;
 				var b = cnp.im;
 
@@ -144,28 +167,27 @@
 					}
 				}
 			}
-
 		}
-
 	}
 
-	window.onload = init;
+	window.onload = init; // function() { window.requestAnimationFrame(init) };
 
 	window.onresize = init;
 
 	window.onkeydown = function(e) {
 		var key = e.keyCode;
 		var delta = .1;	
-		if (key == 38) {
-			SPREAD +=  SPREAD*delta; // easeLinear(.1, SPREAD, delta, 10);
-			init();
-		} else if (key == 40) {
-			SPREAD -= SPREAD*delta; // easeLinear(.01, SPREAD, -1*delta, 100);
-			init();
-		} else if (key == 67) {
-			TOGGLE_COLOR = (TOGGLE_COLOR+1) % 3;
-			init();
-		}
+		if (key == 32) {
+			if (TOGGLE_ANIM) window.cancelAnimationFrame(anim_id);
+			else init();
+			TOGGLE_ANIM = !TOGGLE_ANIM;
+		} 
+		else if (key == 38) SPREAD += SPREAD*delta;              // zoom in
+		else if (key == 40) SPREAD -= SPREAD*delta;              // zoom out
+		else if (key == 82) SPREAD = .5;                         // reset zoom
+		else if (key == 67) TOGGLE_COLOR = (TOGGLE_COLOR+1) % 3; // change display mode
+		else if (key == 219) GRID_SIZE--;                        // add points
+		else if (key == 221) GRID_SIZE++;                        // decrease points
 	};
 
 	</script>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>complex voronoi</title>
+	<script src="lib/d3/d3.js"></script>
+	<script src="lib/math/math.js"></script>
+	<style type="text/css">
+	body {
+		margin: 0px;
+		overflow: hidden;
+	}
+	#bg {
+		background-color: #EFEE69;
+	}
+	</style>
+</head>
+<body>
+	<canvas id="bg">your browser doesn't support HTML5 canvas</canvas>
+	<script type="text/javascript">
+
+/*============================================================================*\
+                           _                                                _ 
+  ___ ___  _ __ ___  _ __ | | _____  __   __   _____  _ __ ___  _ __   ___ (_)
+ / __/ _ \| '_ ` _ \| '_ \| |/ _ \ \/ /___\ \ / / _ \| '__/ _ \| '_ \ / _ \| |
+| (_| (_) | | | | | | |_) | |  __/>  <_____\ V / (_) | | | (_) | | | | (_) | |
+ \___\___/|_| |_| |_| .__/|_|\___/_/\_\     \_/ \___/|_|  \___/|_| |_|\___/|_|
+                    |_|                                                       
+\*============================================================================*/
+
+	var PTS    = 10; // initialized in grid formation
+	var RATIOS = d3.range(1, 20, .0005);
+
+	var PT_RAD = 2;
+	var COLORS = d3.interpolateHcl('#21313E', '#EFEE69');
+	var SPREAD = .5;
+
+	var TOGGLE_COLOR = 2;
+	var TOGGLE_ANIM  = false;
+
+	var IDX = 0;
+
+	var anim_id;
+
+	function getCellSizes(cells) {
+		var cellSizes = [];
+		for (var k = 0; k < cells.length; ++k) {
+			var area = 0;
+			var c = cells[k];
+			if (c != undefined && c.length != 0) {
+				for (var i = 0; i < c.length; ++i) {
+					j = (i + 1) % c.length;
+					area += c[i][0] * c[j][1];
+					area -= c[j][0] * c[i][1];
+				}
+				cellSizes.push(Math.abs(area/2));
+			}
+		}
+		return cellSizes;
+	}
+
+	function render() {
+
+		if (TOGGLE_ANIM) {
+			anim_id = window.requestAnimationFrame(render);
+			IDX = (IDX+1) % RATIOS.length;
+		}
+
+		var width  = window.innerWidth;
+		var height = window.innerHeight;
+
+		var canvas = d3.select('#bg')
+		.attr('width', width)
+		.attr('height', height);
+
+		var ctx = canvas.node().getContext('2d');
+
+		ctx.clearRect(0, 0, width, height);
+
+		var voronoi = d3.geom.voronoi();
+
+		voronoi.clipExtent([[0,0],[width, height]]);
+
+		var pts = [];
+
+		for (var i = -PTS/2; i <= PTS/2; ++i) {
+			for (var j = -PTS/2; j <= PTS/2; ++j) {
+
+				var cn = new math.complex(i, j);
+				var cnp = math.pow(cn, RATIOS[IDX]);
+				var a = cnp.re;
+				var b = cnp.im;
+
+				pts.push([a,b]);
+			}
+		}
+
+		var mag = pts.map(function(x) { return math.norm(x); });
+		var maxMag = Math.max.apply(null, mag);
+
+		var l = Math.max(width, height);
+
+		var scal = (l*SPREAD/maxMag);
+
+		var sites = [];
+
+		for (var i = 0; i < pts.length; ++i) {
+
+			var a = pts[i][0];
+			var b = pts[i][1];
+
+			var x = (width/2)+a*scal;
+			var y = (height/2)+b*scal;
+
+			if (0 <= x && x <= width && 0 <= y && y <= height) {
+				sites.push([x,y]);
+			}
+
+			if (TOGGLE_COLOR === 0) {
+				ctx.fillStyle = '#21313E';
+				ctx.beginPath();
+				ctx.arc(x, y, PT_RAD, 2*Math.PI, false);
+				ctx.fill();
+				ctx.closePath();
+			}
+		}
+
+		var cells = voronoi(sites).filter(function(x) { return (x !== undefined); });
+
+		if (TOGGLE_COLOR > 0) {
+
+			var cellSizes = getCellSizes(cells);
+			var minSize = Math.min.apply(null, cellSizes);
+			cellSizes = cellSizes.map(function(x) { return x - minSize; });
+			var maxSize = Math.max.apply(null, cellSizes);
+			var weights = cellSizes.map(function(x) { return x/maxSize; });
+
+			for (var i = 0; i < cells.length; ++i) {
+				cell = cells[i];
+				if (cell != undefined && cell.length != 0) {
+					ctx.beginPath();
+					ctx.moveTo(cell[0][0], cell[0][1]);
+					for (var j = 1, m = cell.length; j < m; ++j) {
+						ctx.lineTo(cell[j][0], cell[j][1]);
+					}
+					ctx.closePath();
+					ctx.fillStyle = COLORS(weights[i]);
+					ctx.fill();
+					ctx.strokeStyle = COLORS(1-weights[i]);
+					ctx.stroke();
+					if (TOGGLE_COLOR === 2) {
+						ctx.fillStyle = COLORS(1-weights[i]);
+						ctx.beginPath();
+						ctx.arc(cell.point[0], cell.point[1], PT_RAD, 2*Math.PI, false);
+						ctx.fill();
+						ctx.closePath();
+					}
+				}
+			}
+		}
+	}
+
+	window.onload = render; // function() { window.requestAnimationFrame(render) };
+
+	window.onresize = render;
+
+	window.onkeydown = function(e) {
+		var key = e.keyCode;
+		var delta = .1;	
+
+		switch(key) {
+			case 32: TOGGLE_ANIM = !TOGGLE_ANIM;           break; // spacebar    - pause and play
+			case 37: IDX = Math.max(0, IDX-1);             break; // left arrow  - step back
+			case 38: SPREAD += SPREAD*delta;               break; // up arrow    - zoom in
+			case 39: IDX = Math.min(RATIOS.length, IDX+1); break; // right arrow - step forward
+			case 40: SPREAD -= SPREAD*delta;               break; // down arrow  - zoom out
+			case 68: TOGGLE_COLOR = (TOGGLE_COLOR+1) % 3;  break; // d           - display mode
+			case 82: SPREAD = .5;                          break; // r           - reset zoom
+			case 219: PTS--;                               break; // [           - remove points
+			case 221: PTS++;                               break; // ]           - add points
+		}
+
+		render();
+	};
+
+	</script>
+</body>
+</html>

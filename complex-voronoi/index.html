@@ -183,6 +183,8 @@
 		render();
 	};
 
+	window.addEventListener('touchend', function(e) { TOGGLE_ANIM = !TOGGLE_ANIM; render();}, false);
+
 	</script>
 </body>
 </html>

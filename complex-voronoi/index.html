@@ -11,12 +11,22 @@
 		overflow: hidden;
 	}
 	#bg {
+		z-index: 1;
 		background-color: #EFEE69;
+		position: absolute;
 	}
+	/*#menu {
+		z-index: 2;
+		background-color: white;
+		position: absolute;
+		width: 500px;
+		height: 500px;
+	}*/
 	</style>
 </head>
 <body>
 	<canvas id="bg">your browser doesn't support HTML5 canvas</canvas>
+	<!-- <div id="menu"></div> -->
 	<script type="text/javascript">
 
 /*============================================================================*\
@@ -29,7 +39,7 @@
 \*============================================================================*/
 
 	var PTS    = 10; // initialized in grid formation
-	var RATIOS = d3.range(1, 20, .0005);
+	var RATIOS = d3.range(1, 20, .001);
 
 	var PT_RAD = 2;
 	var COLORS = d3.interpolateHcl('#21313E', '#EFEE69');
@@ -160,10 +170,6 @@
 		}
 	}
 
-	window.onload = render; // function() { window.requestAnimationFrame(render) };
-
-	window.onresize = render;
-
 	window.onkeydown = function(e) {
 		var key = e.keyCode;
 		var delta = .1;	
@@ -184,6 +190,11 @@
 	};
 
 	window.addEventListener('touchend', function(e) { TOGGLE_ANIM = !TOGGLE_ANIM; render();}, false);
+
+	window.onresize = render;
+
+	window.onload = render; // function() { window.requestAnimationFrame(render) };
+
 
 	</script>
 </body>

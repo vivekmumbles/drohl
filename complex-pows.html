@@ -14,7 +14,7 @@
 		margin: auto;
 	}
 	#bg {
-		background-color: crimson;
+		background-color: #EFEE69;
 	}
 	</style>
 </head>
@@ -22,35 +22,20 @@
 	<div id="wrap"><canvas id="bg">your browser doesn't support HTML5 canvas</canvas></div>
 	<script type="text/javascript">
 
-	// var Complex = function(a, b) {
-	// 	this.re = a;
-	// 	this.im = b;
-	// 	this.pow = function(n) {
-	// 		if (n === 0) return 1;
-	// 		if (n  <  0) return NaN;
-	// 		var r = new Complex(this.re, this.im);
-	// 		while(n > 1) {
-	// 			tre = r.re*this.re - r.im*this.im;
-	// 			tim = r.re*this.im + r.im*this.re;
-	// 			r.re = tre;
-	// 			r.im = tim;
-	// 			--n;
-	// 		}
-	// 		return r;
-	// 	}
-	// }
+	var NUM_P     = 12;
+	var DEN_P     = 4;
+	var GRID_SIZE = 10;
 
-	var foo;
+	var SPREAD = .5;
+	var PT_RAD = 2;
+
+	var TOGGLE_COLOR = 2;
 
 	function init() {
 
 		var width  = window.innerWidth;
 		var height = window.innerHeight;
 
-		var GRID_SIZE = 10;
-		var NUM_P     = 5;
-		var DEN_P     = 2;
-		var PT_RAD    = 2;
 
 		var canvas = d3.select('#bg')
 		.attr('width', width)
@@ -78,15 +63,12 @@
 			}
 		}
 
-		var mag = pts.map(function(x) { return math.norm(x) });
-		var max = Math.max.apply(null, mag);
-		// if (max > math.norm([width/2, height/2])) {
-		pts = pts.map(function(x) { return math.divide(x, max/NUM_P); });
-		// }
+		var mag = pts.map(function(x) { return math.norm(x); });
+		var maxMag = Math.max.apply(null, mag);
 
-		foo = max;
+		var l = Math.max(width, height);
 
-		console.log(max);
+		var scal = (l*SPREAD/maxMag);
 
 		var sites = [];
 
@@ -95,29 +77,25 @@
 			var a = pts[i][0];
 			var b = pts[i][1];
 
-			var x = (width/2)+a*(width/GRID_SIZE);
-			var y = (height/2)+b*(height/GRID_SIZE);
+			var x = (width/2)+a*scal;
+			var y = (height/2)+b*scal;
 
 			if (0 <= x && x <= width && 0 <= y && y <= height) {
 				sites.push([x,y]);
-			}	
+			}
 
-			ctx.fillStyle = 'black';
-			ctx.beginPath();
-			ctx.arc(x, y, PT_RAD, 2*Math.PI, false);
-			ctx.fill();
-			ctx.closePath();
+			if (TOGGLE_COLOR === 0) {
+				ctx.fillStyle = '#21313E';
+				ctx.beginPath();
+				ctx.arc(x, y, PT_RAD, 2*Math.PI, false);
+				ctx.fill();
+				ctx.closePath();
+			}
 		}
 
-		// console.log(sites);
+		var cells = voronoi(sites).filter(function(x) { return (x !== undefined); });
 
-		var cells = voronoi(sites);
-
-		// foo = cells;
-
-		// console.log(cells);
-
-		function getCellSizes() {
+		function getCellSizes(cells) {
 			var cellSizes = [];
 			for (var k = 0; k < cells.length; ++k) {
 				var area = 0;
@@ -134,44 +112,62 @@
 			return cellSizes;
 		}
 
-		var cellSizes = getCellSizes();
-		// cellSizes = cellSizes.map(function(x) { return 1/Math.log2(x); });
-		var minSize = Math.min.apply(null, cellSizes);
-		cellSizes = cellSizes.map(function(x) { return x - minSize; });
-		var maxSize = Math.max.apply(null, cellSizes);
-		var weights = cellSizes.map(function(x) { return x/maxSize; });
+		if (TOGGLE_COLOR > 0) {
 
-		var colors = d3.interpolateHcl('#21313E', '#EFEE69');
+			var cellSizes = getCellSizes(cells);
+			var minSize = Math.min.apply(null, cellSizes);
+			cellSizes = cellSizes.map(function(x) { return x - minSize; });
+			var maxSize = Math.max.apply(null, cellSizes);
+			var weights = cellSizes.map(function(x) { return x/maxSize; });
 
-		console.log(maxSize);
+			var colors = d3.interpolateHcl('#21313E', '#EFEE69');
 
-		console.log(weights);
-
-		for (var i = 0; i < cells.length; ++i) {
-			cell = cells[i];
-			// console.log(i);
-			if (cell != undefined && cell.length != 0) {
-				ctx.beginPath();
-				ctx.moveTo(cell[0][0], cell[0][1]);
-				for (var j = 1, m = cell.length; j < m; ++j) {
-					ctx.lineTo(cell[j][0], cell[j][1]);
+			for (var i = 0; i < cells.length; ++i) {
+				cell = cells[i];
+				if (cell != undefined && cell.length != 0) {
+					ctx.beginPath();
+					ctx.moveTo(cell[0][0], cell[0][1]);
+					for (var j = 1, m = cell.length; j < m; ++j) {
+						ctx.lineTo(cell[j][0], cell[j][1]);
+					}
+					ctx.closePath();
+					ctx.fillStyle = colors(weights[i]);
+					ctx.fill();
+					ctx.strokeStyle = colors(1-weights[i]);
+					ctx.stroke();
+					if (TOGGLE_COLOR === 2) {
+						ctx.fillStyle = colors(1-weights[i]);
+						ctx.beginPath();
+						ctx.arc(cell.point[0], cell.point[1], PT_RAD, 2*Math.PI, false);
+						ctx.fill();
+						ctx.closePath();
+					}
 				}
-				ctx.closePath();
-			// ctx.fillStyle = '#'+Math.floor(Math.random()*16777215).toString(16);
-			ctx.fillStyle = colors(weights[i]);
-			ctx.fill();
-			// ctx.strokeStyle = '#'+Math.floor(Math.random()*16777215).toString(16);
-			ctx.strokeStyle = colors(1-weights[i]);
-			ctx.stroke();
+			}
+
 		}
+
 	}
 
-}
+	window.onload = init;
 
-window.onload = init;
+	window.onresize = init;
 
-window.onresize = init;
+	window.onkeydown = function(e) {
+		var key = e.keyCode;
+		var delta = .1;	
+		if (key == 38) {
+			SPREAD +=  SPREAD*delta; // easeLinear(.1, SPREAD, delta, 10);
+			init();
+		} else if (key == 40) {
+			SPREAD -= SPREAD*delta; // easeLinear(.01, SPREAD, -1*delta, 100);
+			init();
+		} else if (key == 67) {
+			TOGGLE_COLOR = (TOGGLE_COLOR+1) % 3;
+			init();
+		}
+	};
 
-</script>
+	</script>
 </body>
 </html>

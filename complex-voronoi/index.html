@@ -39,7 +39,7 @@
 \*============================================================================*/
 
 	var PTS    = 10; // initialized in grid formation
-	var RATIOS = d3.range(1, 20, .001);
+	var RATIOS = d3.range(1, 5, .001).concat(d3.range(5, 1, -.001));
 
 	var PT_RAD = 2;
 	var COLORS = d3.interpolateHcl('#21313E', '#EFEE69');
@@ -135,7 +135,7 @@
 			}
 		}
 
-		var cells = voronoi(sites).filter(function(x) { return (x !== undefined); });
+		var cells = voronoi(sites).filter(function(x) { return (x != undefined); });
 
 		if (TOGGLE_COLOR > 0) {
 
@@ -175,18 +175,16 @@
 		var delta = .1;	
 
 		switch(key) {
-			case 32: TOGGLE_ANIM = !TOGGLE_ANIM;           break; // spacebar    - pause and play
-			case 37: IDX = Math.max(0, IDX-1);             break; // left arrow  - step back
-			case 38: SPREAD += SPREAD*delta;               break; // up arrow    - zoom in
-			case 39: IDX = Math.min(RATIOS.length, IDX+1); break; // right arrow - step forward
-			case 40: SPREAD -= SPREAD*delta;               break; // down arrow  - zoom out
-			case 68: TOGGLE_COLOR = (TOGGLE_COLOR+1) % 3;  break; // d           - display mode
-			case 82: SPREAD = .5;                          break; // r           - reset zoom
-			case 219: PTS = Math.max(1, PTS-1);            break; // [           - remove points
-			case 221: PTS++;                               break; // ]           - add points
+			case 32: TOGGLE_ANIM = !TOGGLE_ANIM; render();           break; // spacebar    - pause and play
+			case 37: IDX = Math.max(0, IDX-1); render();             break; // left arrow  - step back
+			case 38: SPREAD += SPREAD*delta; render();               break; // up arrow    - zoom in
+			case 39: IDX = Math.min(RATIOS.length, IDX+1); render(); break; // right arrow - step forward
+			case 40: SPREAD -= SPREAD*delta; render();               break; // down arrow  - zoom out
+			case 68: TOGGLE_COLOR = (TOGGLE_COLOR+1) % 3; render();  break; // d           - display mode
+			case 82: SPREAD = .5; render();                          break; // r           - reset zoom
+			case 219: PTS = Math.max(1, PTS-1); render();            break; // [           - remove points
+			case 221: PTS++; render();                               break; // ]           - add points
 		}
-
-		render();
 	};
 
 	window.addEventListener('touchend', function(e) { TOGGLE_ANIM = !TOGGLE_ANIM; render();}, false);

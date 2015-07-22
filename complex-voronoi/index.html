@@ -92,10 +92,10 @@
 	var DIR          = 1;
 	var DISP_MODE    = 0;
 	var MAX_POW      = 5;
-	var MIN_POW      = 1;
-	var POW          = MIN_POW;
+	var MIN_POW      = -5;
+	var POW          = 1;
 	var PT_RAD       = 2;
-	var PTS          = 10; // initialized in grid formation
+	var PTS          = 13; // initialized in grid formation
 	var RATE         = .001;
 	var S_DELTA      = .1;
 	var SPREAD       = DEF_SPREAD;
@@ -226,16 +226,16 @@
 		var key = e.keyCode;
 
 		switch(key) {
-			case 32 : TOGGLE_ANIM = !TOGGLE_ANIM;          render(); break; // spacebar    - pause and play
-			case 37 : POW += -1*DIR*RATE;                  render(); break; // left arrow  - step back
-			case 38 : SPREAD += SPREAD*S_DELTA;            render(); break; // up arrow    - zoom in
-			case 39 : POW += DIR*RATE;                     render(); break; // right arrow - step forward
-			case 40 : SPREAD -= SPREAD*S_DELTA;            render(); break; // down arrow  - zoom out
-			case 67 : toggleCtrls();                                 break; // c           - ctrls menu
-			case 68 : DISP_MODE = (DISP_MODE+1) % 3;       render(); break; // d           - display mode
-			case 82 : SPREAD = .7;                         render(); break; // r           - reset zoom
-			case 219: PTS = Math.max(1, PTS-1);            render(); break; // [           - remove points
-			case 221: PTS++;                               render(); break; // ]           - add points
+			case 32 : TOGGLE_ANIM = !TOGGLE_ANIM;    render(); break; // spacebar    - pause and play
+			case 37 : POW += -1*DIR*RATE;            render(); break; // left arrow  - step back
+			case 38 : SPREAD += SPREAD*S_DELTA;      render(); break; // up arrow    - zoom in
+			case 39 : POW += DIR*RATE;               render(); break; // right arrow - step forward
+			case 40 : SPREAD -= SPREAD*S_DELTA;      render(); break; // down arrow  - zoom out
+			case 67 : toggleCtrls();                           break; // c           - ctrls menu
+			case 68 : DISP_MODE = (DISP_MODE+1) % 3; render(); break; // d           - display mode
+			case 82 : SPREAD = .7;                   render(); break; // r           - reset zoom
+			case 219: PTS = Math.max(1, PTS-2);      render(); break; // [           - remove points
+			case 221: PTS+=2;                        render(); break; // ]           - add points
 		}
 	};
 

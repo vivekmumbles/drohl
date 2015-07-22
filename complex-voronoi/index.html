@@ -114,7 +114,7 @@
 | (_| (_) | | | | | | |_) | |  __/>  <_____\ V / (_) | | | (_) | | | | (_) | |
  \___\___/|_| |_| |_| .__/|_|\___/_/\_\     \_/ \___/|_|  \___/|_| |_|\___/|_|
                     |_|                                                       
-                    \*============================================================================*/
+ \*============================================================================*/
 
 	/*
 	
@@ -166,8 +166,8 @@
 			POW += DIR*RATE;
 		}
 
-		if (POW + RATE >= MAX_POW && DIR ===  1) DIR = -1;
-		if (POW - RATE <= MIN_POW && DIR === -1) DIR =  1;
+		if (POW >= MAX_POW && DIR ===  1) DIR = -1;
+		if (POW <= MIN_POW && DIR === -1) DIR =  1;
 
 		populateInfo();
 
@@ -299,18 +299,18 @@
 		TOGGLE_CTRLS = !TOGGLE_CTRLS;
 	}
 
-	var curPow  = document.getElementById('cur-pow');
-	var minPow  = document.getElementById('min-pow');
-	var maxPow  = document.getElementById('max-pow');
-	var powRate = document.getElementById('pow-rate');
-	var numPts  = document.getElementById('num-pts');
+	// var curPow  = document.getElementById('cur-pow');
+	// var minPow  = document.getElementById('min-pow');
+	// var maxPow  = document.getElementById('max-pow');
+	// var powRate = document.getElementById('pow-rate');
+	// var numPts  = document.getElementById('num-pts');
 
 	function populateInfo() {
-		curPow.innerText  = math.round(POW, 5);
-		minPow.innerText  = MIN_POW;
-		maxPow.innerText  = MAX_POW;
-		powRate.innerText = RATE;
-		numPts.innerText  = Math.pow(2, PTS+1);
+		document.getElementById('cur-pow').innerText  = math.round(POW, 5);
+		document.getElementById('min-pow').innerText  = MIN_POW;
+		document.getElementById('max-pow').innerText  = MAX_POW;
+		document.getElementById('pow-rate').innerText = RATE;
+		document.getElementById('num-pts').innerText  = Math.pow(2, PTS+1);
 	}
 
 	function toggleInfo() {

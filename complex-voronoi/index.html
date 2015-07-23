@@ -39,6 +39,14 @@
 	table {
 		min-width: 300px;
 	}
+	a {
+		text-decoration: none;
+		color: #48D848;
+		opacity: .8;
+	}
+	a:hover {
+		color: greenyellow;
+	}
 	</style>
 </head>
 <body>
@@ -78,6 +86,10 @@
 				<td>d</td>
 				<td>toggle display mode</td>
 			</tr>
+			<tr>
+				<td>link to repo</td>
+				<td><a href="https://github.com/vivekmumbles/drohl/tree/gh-pages/complex-voronoi" target="_blank">github</a></td>
+			</tr>
 		</table>
 	</div>
 	<div id="info" class="menu">
@@ -103,6 +115,10 @@
 				<td># of points</td>
 				<td id="num-pts"></td>
 			</tr>
+			<tr>
+				<td>link to repo</td>
+				<td><a href="https://github.com/vivekmumbles/drohl/tree/gh-pages/complex-voronoi" target="_blank">github</a></td>
+			</tr>
 		</table>
 	</div>
 	<script type="text/javascript">
@@ -114,7 +130,7 @@
 | (_| (_) | | | | | | |_) | |  __/>  <_____\ V / (_) | | | (_) | | | | (_) | |
  \___\___/|_| |_| |_| .__/|_|\___/_/\_\     \_/ \___/|_|  \___/|_| |_|\___/|_|
                     |_|                                                       
- \*============================================================================*/
+\*============================================================================*/
 
 	/*
 	
@@ -142,6 +158,9 @@
 	var TOGGLE_CTRLS = true;
 	var TOGGLE_INFO  = false;
 
+	var canvas;
+	var ctx;
+
 	function getCellSizes(cells) {
 		var cellSizes = [];
 		for (var k = 0; k < cells.length; ++k) {
@@ -159,6 +178,7 @@
 		return cellSizes;
 	}
 
+
 	function render() {
 
 		if (TOGGLE_ANIM) {
@@ -169,16 +189,10 @@
 		if (POW >= MAX_POW && DIR ===  1) DIR = -1;
 		if (POW <= MIN_POW && DIR === -1) DIR =  1;
 
-		populateInfo();
+		if (!TOGGLE_INFO) populateInfo();
 
 		var width  = window.innerWidth;
 		var height = window.innerHeight;
-
-		var canvas = d3.select('#bg')
-		.attr('width', width)
-		.attr('height', height);
-
-		var ctx = canvas.node().getContext('2d');
 
 		ctx.clearRect(0, 0, width, height);
 
@@ -281,6 +295,11 @@
 		}
 	};
 
+	function toggleDisplay(e, b) {
+		e.style.display = b ? 'block' : 'none';
+		console.log(e);
+	}
+
 	function toggleCtrls() {
 
 		if (TOGGLE_CTRLS) TOGGLE_ANIM = false;
@@ -289,12 +308,14 @@
 		var info = d3.select('#info');
 
 		if (TOGGLE_CTRLS) {
-			info.transition().style('opacity', 0);
+			info.transition().style('opacity', 0)
+				.each('end', function() { toggleDisplay(info.node(), false) });
 			TOGGLE_INFO = false; toggleInfo();
-			ctrls.style({'width': window.innerWidth+'px', 'height': window.innerHeight+'px', 'opacity': 0}).transition().style('opacity', 1);
+			ctrls.style({'width': window.innerWidth+'px', 'height': window.innerHeight+'px', 'opacity': 0}).transition().style('opacity', 1)
+				.each('start', function() { toggleDisplay(ctrls.node(), true)});
 		}
 		else 
-			ctrls.transition().style('opacity', 0);
+			ctrls.transition().style('opacity', 0).each('end', function() { toggleDisplay(ctrls.node(), false) });
 
 		TOGGLE_CTRLS = !TOGGLE_CTRLS;
 	}
@@ -321,20 +342,30 @@
 		var ctrls = d3.select('#ctrls');
 
 		if (TOGGLE_INFO) {
-			ctrls.transition().style('opacity', 0);
+			ctrls.transition().style('opacity', 0)
+				.each('end', function() { toggleDisplay(ctrls.node(), false)});
 			TOGGLE_CTRLS = false; toggleCtrls();
-			info.style({'width': window.innerWidth+'px', 'height': window.innerHeight+'px', 'opacity': 0}).transition().style('opacity', 1);
+			info.style({'width': window.innerWidth+'px', 'height': window.innerHeight+'px', 'opacity': 0}).transition().style('opacity', 1)
+				.each('start', function() { toggleDisplay(info.node(), true)});
 		}
 		else 
-			info.transition().style('opacity', 0);
+			info.transition().style('opacity', 0).each('end', function() { toggleDisplay(info.node(), false) });
 
 		TOGGLE_INFO = !TOGGLE_INFO;
 
 	}
 
 	function resize() {
-		d3.select('#ctrls').style({'width': window.innerWidth+'px', 'height': window.innerHeight+'px'})
-		d3.select('#info').style({'width': window.innerWidth+'px', 'height': window.innerHeight+'px'})
+
+		canvas = d3.select('#bg')
+		.attr('width', window.innerWidth)
+		.attr('height', window.innerHeight);
+
+		ctx = canvas.node().getContext('2d');
+
+		d3.select('#ctrls').style({'width': window.innerWidth+'px', 'height': window.innerHeight+'px'});
+		d3.select('#info').style({'width': window.innerWidth+'px', 'height': window.innerHeight+'px'});
+
 		render();
 	}
 
@@ -344,7 +375,7 @@
 		render();
 	}
 
-	window.addEventListener('touchend', function(e) { TOGGLE_ANIM = !TOGGLE_ANIM; render();}, false);
+	// window.addEventListener('touchend', function(e) { TOGGLE_ANIM = !TOGGLE_ANIM; render();}, false);
 
 	window.onresize = resize;
 

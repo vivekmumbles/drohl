@@ -328,6 +328,8 @@
 
 	function toggleInfo() {
 
+		populateInfo();
+
 		if (TOGGLE_INFO) TOGGLE_ANIM = false;
 
 		var info = d3.select('#info');

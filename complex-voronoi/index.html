@@ -159,6 +159,7 @@
 
 	var canvas;
 	var ctx;
+	var voronoi = d3.geom.voronoi();
 
 	function getCellSizes(cells) {
 		var cellSizes = [];
@@ -194,8 +195,6 @@
 		var height = window.innerHeight;
 
 		ctx.clearRect(0, 0, width, height);
-
-		var voronoi = d3.geom.voronoi();
 
 		voronoi.clipExtent([[0,0],[width, height]]);
 

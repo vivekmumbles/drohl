@@ -163,7 +163,6 @@
 	var TOGGLE_CTRLS = true;
 	var TOGGLE_INFO  = false;
 
-	var canvas;
 	var ctx;
 	var voronoi = d3.geom.voronoi();
 
@@ -356,7 +355,7 @@
 
 	function resize() {
 
-		canvas = d3.select('#bg')
+		var canvas = d3.select('#bg')
 		.attr('width', window.innerWidth)
 		.attr('height', window.innerHeight);
 
